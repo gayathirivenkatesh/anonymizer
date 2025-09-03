@@ -135,12 +135,3 @@ The frontend will open in your browser at `http://localhost:3000`.
 10. Yang, L., Tian, M., Xin, D., & Zheng, J. (2024). *AI-driven anonymization: Protecting personal data privacy while leveraging machine learning*.
 
 ---
-
-## License
-
-This project is licensed under the MIT License.
-
----
-
-
-**Your Name** – \[Your GitHub Profile]
