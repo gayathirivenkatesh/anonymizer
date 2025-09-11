@@ -1,0 +1,13 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Your custom global overrides should be LAST */
+html, body {
+  @apply h-full;
+  background: linear-gradient(180deg, #0b0f2b, #101632);
+  color: #fff;
+}
+#root {
+  @apply h-full;
+}

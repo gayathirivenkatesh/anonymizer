@@ -1,0 +1,32 @@
+fastapi==0.111.0
+typer<0.10.0
+uvicorn[standard]==0.23.0
+
+# Core AI & NLP
+spacy==3.6.1
+en-core-web-sm @ https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.6.0/en_core_web_sm-3.6.0-py3-none-any.whl
+faker==23.3.0
+
+# Face Anonymization (lightweight)
+opencv-python==4.8.1.78
+mediapipe==0.10.21
+protobuf<5,>=4.25.3
+
+# Media processing
+pydub
+moviepy
+python-multipart
+Pillow
+
+# Optional AI (if you want TTS + Face analysis)
+coqui-tts
+soundfile
+deepface==0.0.90
+tensorflow==2.15.0
+tf-keras==2.15.0
+
+# Utilities
+pandas
+pydantic==2.7.0
+
+piexif
