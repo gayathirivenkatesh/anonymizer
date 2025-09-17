@@ -5,6 +5,7 @@ python-multipart==0.0.9
 
 # NLP & Text Anonymization
 spacy==3.7.2
+en-core-web-sm==3.7.1  # Preloaded spaCy model
 faker==24.4.0
 
 # Image & Video Processing
