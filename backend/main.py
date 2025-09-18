@@ -40,11 +40,11 @@ if not os.path.exists(UPLOAD_DIR):
 app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
 
 # Root and healthcheck endpoints
-@app.get("/")
+@app.get("/", methods=["GET", "HEAD"])
 def root():
     return {"msg": "Smart Anonymizer API Running"}
 
-@app.get("/health")
+@app.get("/health", methods=["GET", "HEAD"])
 def health():
     return {"status": "alive ✅"}
 
