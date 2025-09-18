@@ -19,9 +19,8 @@ opencv-python-headless
 # Text Processing
 nltk
 spacy
-# Ensure English model is installed for NLP
-en-core-web-sm @ https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.7.1/en_core_web_sm-3.7.1-py3-none-any.whl
-faker
+https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.8.0/en_core_web_sm-3.8.0.tar.gz
+
 
 # Video Processing
 moviepy
