@@ -23,21 +23,19 @@ def anonymize_video(input_path: str, output_path: str) -> str:
     width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
     height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
 
-    # ✅ Safer codec order (start with mp4v instead of avc1)
+    # ✅ Safer codec order (skip avc1 to avoid codec_id=27 issue)
     codecs = ["mp4v", "XVID", "MJPG"]
     out = None
-    chosen_codec = None
 
     for codec in codecs:
         fourcc = cv2.VideoWriter_fourcc(*codec)
         out = cv2.VideoWriter(output_path, fourcc, fps, (width, height))
         if out.isOpened():
-            chosen_codec = codec
             print(f"✅ Using codec: {codec}")
             break
 
+    # If OpenCV failed → fallback with raw AVI + ffmpeg
     if not out or not out.isOpened():
-        # ❌ OpenCV failed → fallback to ffmpeg encoding
         print("⚠️ OpenCV VideoWriter failed, using ffmpeg fallback...")
         temp_raw = output_path.replace(".mp4", "_raw.avi")
         raw_codec = cv2.VideoWriter_fourcc(*"MJPG")
@@ -46,7 +44,7 @@ def anonymize_video(input_path: str, output_path: str) -> str:
             raise RuntimeError("❌ Could not initialize any video writer")
         output_path = temp_raw
 
-    # Process frames
+    # Process frames (blur faces)
     while True:
         ret, frame = cap.read()
         if not ret:
