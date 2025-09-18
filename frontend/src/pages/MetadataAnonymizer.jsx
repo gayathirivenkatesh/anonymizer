@@ -17,7 +17,7 @@ export default function MetadataAnonymizer() {
     formData.append("file", file);
 
     try {
-      const res = await fetch("http://anonymizer-rgr5.onrender.com/api/metadata/process", {
+      const res = await fetch("https://anonymizer-rgr5.onrender.com/api/metadata/process", {
         method: "POST",
         body: formData,
       });
