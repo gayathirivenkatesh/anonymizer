@@ -10,14 +10,9 @@ faker==24.4.0
 
 # Image & Video Processing
 opencv-python-headless==4.8.1.78
-mediapipe==0.10.21
 pillow==10.2.0
 moviepy==1.0.3
 piexif==1.1.3
-
-# AI for Face & Emotion Analysis
-deepface==0.0.90
-tensorflow-cpu==2.15.0  # CPU-only, avoids GPU build issues
 
 # Utilities
 pandas==2.2.2
