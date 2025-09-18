@@ -1,9 +1,10 @@
-import en_core_web_sm
+import spacy
 from faker import Faker
 import re
 from datetime import datetime, timedelta
 
-nlp = en_core_web_sm.load()
+# Load spaCy model (make sure en_core_web_sm is installed in requirements.txt)
+nlp = spacy.load("en_core_web_sm")
 faker = Faker()
 
 ENTITY_MAP = {
