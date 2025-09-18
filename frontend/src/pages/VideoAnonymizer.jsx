@@ -33,7 +33,7 @@ export default function VideoAnonymizer() {
     formData.append("file", videoFile);
 
     try {
-      const res = await fetch("http://127.0.0.1:8000/api/video/anonymize", {
+      const res = await fetch("http://anonymizer-rgr5.onrender.com/api/video/anonymize", {
         method: "POST",
         body: formData,
       });
