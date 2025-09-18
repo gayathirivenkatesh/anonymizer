@@ -1,15 +1,14 @@
-# backend/services/video_service.py
 import cv2
-from tempfile import NamedTemporaryFile
 import os
+import subprocess
 
-# ✅ Suppress OpenCV/FFmpeg warnings (like OpenH264 load failures)
+# Suppress OpenCV/FFmpeg warnings
 try:
     cv2.utils.logging.setLogLevel(cv2.utils.logging.LOG_LEVEL_ERROR)
 except AttributeError:
-    # fallback for older versions
     cv2.setLogLevel(3)
-# Load Haar Cascade for face detection
+
+# Haar Cascade for face detection
 face_cascade = cv2.CascadeClassifier(
     cv2.data.haarcascades + "haarcascade_frontalface_default.xml"
 )
@@ -24,8 +23,8 @@ def anonymize_video(input_path: str, output_path: str) -> str:
     width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
     height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
 
-    # Try codecs in order until one works
-    codecs = ["avc1", "mp4v", "XVID"]
+    # ✅ Safer codec order (start with mp4v instead of avc1)
+    codecs = ["mp4v", "XVID", "MJPG"]
     out = None
     chosen_codec = None
 
@@ -38,14 +37,21 @@ def anonymize_video(input_path: str, output_path: str) -> str:
             break
 
     if not out or not out.isOpened():
-        raise RuntimeError("❌ Failed to initialize VideoWriter with any codec")
+        # ❌ OpenCV failed → fallback to ffmpeg encoding
+        print("⚠️ OpenCV VideoWriter failed, using ffmpeg fallback...")
+        temp_raw = output_path.replace(".mp4", "_raw.avi")
+        raw_codec = cv2.VideoWriter_fourcc(*"MJPG")
+        out = cv2.VideoWriter(temp_raw, raw_codec, fps, (width, height))
+        if not out.isOpened():
+            raise RuntimeError("❌ Could not initialize any video writer")
+        output_path = temp_raw
 
+    # Process frames
     while True:
         ret, frame = cap.read()
         if not ret:
             break
 
-        # Detect faces and blur them
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         faces = face_cascade.detectMultiScale(gray, 1.1, 4)
 
@@ -59,17 +65,15 @@ def anonymize_video(input_path: str, output_path: str) -> str:
     cap.release()
     out.release()
 
-    if not os.path.exists(output_path):
-        raise RuntimeError("❌ Output file was not created")
+    # ✅ Convert raw avi → mp4 with ffmpeg if fallback was used
+    if output_path.endswith("_raw.avi"):
+        final_path = output_path.replace("_raw.avi", ".mp4")
+        cmd = [
+            "ffmpeg", "-y", "-i", output_path,
+            "-vcodec", "libx264", "-crf", "23", "-preset", "veryfast", final_path
+        ]
+        subprocess.run(cmd, check=True)
+        os.remove(output_path)  # cleanup raw file
+        output_path = final_path
 
     return output_path
-
-
-def save_upload_temp(file, filename: str) -> str:
-    """Save uploaded file with the same extension (not always .mp4)."""
-    ext = os.path.splitext(filename)[1] or ".mp4"
-    tmp_file = NamedTemporaryFile(delete=False, suffix=ext)
-    tmp_file.write(file)
-    tmp_file.flush()
-    tmp_file.close()
-    return tmp_file.name
