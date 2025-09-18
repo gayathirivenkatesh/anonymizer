@@ -13,7 +13,7 @@ export default function TextAnonymizer() {
     }
     setLoading(true);
     try {
-      const res = await fetch("http://anonymizer-rgr5.onrender.com/api/text/anonymize", {
+      const res = await fetch("https://anonymizer-rgr5.onrender.com/api/text/anonymize", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ text }),
