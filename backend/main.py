@@ -20,7 +20,7 @@ app = FastAPI(title="Smart Anonymizer API")
 # CORS middleware: allow your Vercel frontend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["https://anonymizer-seven.vercel.app/"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
