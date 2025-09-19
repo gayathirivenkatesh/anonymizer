@@ -9,16 +9,22 @@ export default function VideoAnonymizer() {
   const [codec, setCodec] = useState("");
   const [loading, setLoading] = useState(false);
 
+  // Cleanup only on component unmount
   useEffect(() => {
     return () => {
       if (originalUrl) URL.revokeObjectURL(originalUrl);
       if (anonymizedUrl) URL.revokeObjectURL(anonymizedUrl);
     };
-  }, [originalUrl, anonymizedUrl]);
+  }, []); // empty deps → runs only when unmounting
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
+
+    // Revoke previous URLs before creating new ones
+    if (originalUrl) URL.revokeObjectURL(originalUrl);
+    if (anonymizedUrl) URL.revokeObjectURL(anonymizedUrl);
+
     setVideoFile(file);
     setOriginalUrl(URL.createObjectURL(file));
     setAnonymizedUrl("");
@@ -33,10 +39,13 @@ export default function VideoAnonymizer() {
     formData.append("file", videoFile);
 
     try {
-      const res = await fetch("https://anonymizer-rgr5.onrender.com/api/video/anonymize", {
-        method: "POST",
-        body: formData,
-      });
+      const res = await fetch(
+        "https://anonymizer-rgr5.onrender.com/api/video/anonymize",
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
 
       if (!res.ok) {
         let errMsg = "Upload failed";
@@ -51,6 +60,9 @@ export default function VideoAnonymizer() {
       if (codecHeader) setCodec(codecHeader);
 
       const blob = await res.blob();
+
+      // Revoke old anonymizedUrl before creating a new one
+      if (anonymizedUrl) URL.revokeObjectURL(anonymizedUrl);
       setAnonymizedUrl(URL.createObjectURL(blob));
     } catch (error) {
       console.error("Error uploading video:", error);
