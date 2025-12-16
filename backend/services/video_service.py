@@ -1,77 +1,47 @@
-import cv2
-import os
-import subprocess
-
-# Suppress OpenCV/FFmpeg warnings
-try:
-    cv2.utils.logging.setLogLevel(cv2.utils.logging.LOG_LEVEL_ERROR)
-except AttributeError:
-    cv2.setLogLevel(3)
-
-# Haar Cascade for face detection
-face_cascade = cv2.CascadeClassifier(
-    cv2.data.haarcascades + "haarcascade_frontalface_default.xml"
-)
-
 def anonymize_video(input_path: str, output_path: str) -> str:
     cap = cv2.VideoCapture(input_path)
 
     if not cap.isOpened():
-        raise ValueError(f"❌ Cannot open video file {input_path}")
+        raise ValueError("Cannot open video")
 
     fps = cap.get(cv2.CAP_PROP_FPS) or 25
     width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
     height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
 
-    # ✅ Safer codec order (skip avc1 to avoid codec_id=27 issue)
-    codecs = ["mp4v", "XVID", "MJPG"]
-    out = None
+    fourcc = cv2.VideoWriter_fourcc(*"mp4v")
+    out = cv2.VideoWriter(output_path, fourcc, fps, (width, height))
 
-    for codec in codecs:
-        fourcc = cv2.VideoWriter_fourcc(*codec)
-        out = cv2.VideoWriter(output_path, fourcc, fps, (width, height))
-        if out.isOpened():
-            print(f"✅ Using codec: {codec}")
-            break
+    SCALE = 0.5
+    FRAME_SKIP = 3
+    BLUR_KERNEL = (31, 31)
 
-    # If OpenCV failed → fallback with raw AVI + ffmpeg
-    if not out or not out.isOpened():
-        print("⚠️ OpenCV VideoWriter failed, using ffmpeg fallback...")
-        temp_raw = output_path.replace(".mp4", "_raw.avi")
-        raw_codec = cv2.VideoWriter_fourcc(*"MJPG")
-        out = cv2.VideoWriter(temp_raw, raw_codec, fps, (width, height))
-        if not out.isOpened():
-            raise RuntimeError("❌ Could not initialize any video writer")
-        output_path = temp_raw
+    frame_count = 0
 
-    # Process frames (blur faces)
     while True:
         ret, frame = cap.read()
         if not ret:
             break
 
-        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        frame_count += 1
+
+        # Skip heavy processing
+        if frame_count % FRAME_SKIP != 0:
+            out.write(frame)
+            continue
+
+        small = cv2.resize(frame, None, fx=SCALE, fy=SCALE)
+        gray = cv2.cvtColor(small, cv2.COLOR_BGR2GRAY)
         faces = face_cascade.detectMultiScale(gray, 1.1, 4)
 
         for (x, y, w, h) in faces:
-            face_roi = frame[y:y+h, x:x+w]
-            face_roi = cv2.GaussianBlur(face_roi, (99, 99), 30)
-            frame[y:y+h, x:x+w] = face_roi
+            x, y, w, h = int(x/SCALE), int(y/SCALE), int(w/SCALE), int(h/SCALE)
+            roi = frame[y:y+h, x:x+w]
+            roi = cv2.GaussianBlur(roi, BLUR_KERNEL, 0)
+            frame[y:y+h, x:x+w] = roi
 
         out.write(frame)
 
     cap.release()
     out.release()
-
-    # ✅ Convert raw avi → mp4 with ffmpeg if fallback was used
-    if output_path.endswith("_raw.avi"):
-        final_path = output_path.replace("_raw.avi", ".mp4")
-        cmd = [
-            "ffmpeg", "-y", "-i", output_path,
-            "-vcodec", "libx264", "-crf", "23", "-preset", "veryfast", final_path
-        ]
-        subprocess.run(cmd, check=True)
-        os.remove(output_path)  # cleanup raw file
-        output_path = final_path
 
     return output_path
