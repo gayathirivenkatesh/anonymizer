@@ -1,3 +1,9 @@
+import cv2
+import os
+
+face_cascade = cv2.CascadeClassifier(
+    cv2.data.haarcascades + "haarcascade_frontalface_default.xml"
+)
 def anonymize_video(input_path: str, output_path: str) -> str:
     cap = cv2.VideoCapture(input_path)
 
