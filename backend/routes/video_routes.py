@@ -17,22 +17,30 @@ async def save_upload_temp(file: UploadFile, upload_dir: str = "temp_uploads") -
 @router.post("/anonymize")
 async def video_anonymizer(file: UploadFile = File(...)):
     try:
-        # Save uploaded file
+        print("Upload received:", file.filename)
+
         input_path = await save_upload_temp(file)
+        print("Saved:", input_path)
+
         output_path = input_path.replace(
-            os.path.splitext(input_path)[1], "_anon.mp4"
+            os.path.splitext(input_path)[1],
+            "_anon.mp4"
         )
 
-        # Process anonymization
+        print("Starting anonymization")
+
         anonymize_video(input_path, output_path)
 
-        # Return anonymized video
+        print("Finished anonymization")
+
         return FileResponse(
             output_path,
             media_type="video/mp4",
-            filename="anonymized_video.mp4",
-            headers={"X-Video-Codec": "avc1"}  # let frontend know
+            filename="anonymized_video.mp4"
         )
 
     except Exception as e:
+        import traceback
+        traceback.print_exc()
+        print("ERROR:", str(e))
         raise HTTPException(status_code=500, detail=str(e))
