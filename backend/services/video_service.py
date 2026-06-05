@@ -78,6 +78,5 @@ def anonymize_video(input_path: str, output_path: str) -> str:
     finally:
         cap.release()
         out.release()
-        cv2.destroyAllWindows()
 
     return output_path
